@@ -11,3 +11,5 @@ trayer-patch
 bstack
 push
 cyclelayouts
+gaplessgrid
+moveresize

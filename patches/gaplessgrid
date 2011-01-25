@@ -1,0 +1,29 @@
+Index: dwm/config.def.h
+===================================================================
+--- dwm.orig/config.def.h
++++ dwm/config.def.h
+@@ -36,6 +36,7 @@ static const Layout layouts[] = {
+ 	{ "[M]",      monocle },
+  	{ "TTT",      bstack },
+  	{ "===",      bstackhoriz },
++  { "###",      gaplessgrid },
+   { .symbol = NULL,   .arrange = NULL    },
+ };
+ 
+Index: dwm/dwm.c
+===================================================================
+--- dwm.orig/dwm.c
++++ dwm/dwm.c
+@@ -134,6 +134,7 @@ typedef struct {
+ /* function declarations */
+ #include "push.h"
+ #include "cyclelayouts.h"
++#include "gaplessgrid.h"
+ static void applyrules(Client *c);
+ static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
+ static void arrange(Monitor *m);
+@@ -2193,3 +2194,4 @@ main(int argc, char *argv[]) {
+ }
+ #include "push.c"
+ #include "cyclelayouts.c"
++#include "gaplessgrid.c"

@@ -1,0 +1,36 @@
+Index: dwm/config.def.h
+===================================================================
+--- dwm.orig/config.def.h
++++ dwm/config.def.h
+@@ -91,6 +91,14 @@ static Key keys[] = {
+ 	TAGKEYS(                        XK_9,                      8)
+   { MODKEY|ShiftMask,             XK_r,      quit,           {0} },
+ 	{ MODKEY|ShiftMask,             XK_q,      spawn,          {.v = quitcmd } },
++  { MODKEY,                       XK_Down,   moveresize,     {.v = (int []){ 0, 25, 0, 0 }}},
++  { MODKEY,                       XK_Up,     moveresize,     {.v = (int []){ 0, -25, 0, 0 }}},
++  { MODKEY,                       XK_Right,  moveresize,     {.v = (int []){ 25, 0, 0, 0 }}},
++  { MODKEY,                       XK_Left,   moveresize,     {.v = (int []){ -25, 0, 0, 0 }}},
++  { MODKEY|ShiftMask,             XK_Down,   moveresize,     {.v = (int []){ 0, 0, 0, 25 }}},
++  { MODKEY|ShiftMask,             XK_Up,     moveresize,     {.v = (int []){ 0, 0, 0, -25 }}},
++  { MODKEY|ShiftMask,             XK_Right,  moveresize,     {.v = (int []){ 0, 0, 25, 0 }}},
++  { MODKEY|ShiftMask,             XK_Left,   moveresize,     {.v = (int []){ 0, 0, -25, 0 }}},
+ };
+ 
+ /* button definitions */
+Index: dwm/dwm.c
+===================================================================
+--- dwm.orig/dwm.c
++++ dwm/dwm.c
+@@ -135,6 +135,7 @@ typedef struct {
+ #include "push.h"
+ #include "cyclelayouts.h"
+ #include "gaplessgrid.h"
++#include "moveresize.h"
+ static void applyrules(Client *c);
+ static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
+ static void arrange(Monitor *m);
+@@ -2195,3 +2196,4 @@ main(int argc, char *argv[]) {
+ #include "push.c"
+ #include "cyclelayouts.c"
+ #include "gaplessgrid.c"
++#include "moveresize.c"
