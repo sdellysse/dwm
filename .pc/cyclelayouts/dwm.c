@@ -133,7 +133,6 @@ typedef struct {
 
 /* function declarations */
 #include "push.h"
-#include "cyclelayouts.h"
 static void applyrules(Client *c);
 static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
 static void arrange(Monitor *m);
@@ -2192,4 +2191,3 @@ main(int argc, char *argv[]) {
 	return 0;
 }
 #include "push.c"
-#include "cyclelayouts.c"

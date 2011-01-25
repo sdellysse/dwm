@@ -1,0 +1,40 @@
+Index: dwm/config.def.h
+===================================================================
+--- dwm.orig/config.def.h
++++ dwm/config.def.h
+@@ -36,6 +36,7 @@ static const Layout layouts[] = {
+ 	{ "[M]",      monocle },
+  	{ "TTT",      bstack },
+  	{ "===",      bstackhoriz },
++  { .symbol = NULL,   .arrange = NULL    },
+ };
+ 
+ /* key definitions */
+@@ -70,8 +71,8 @@ static Key keys[] = {
+ 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
+ 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+ 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+-	{ MODKEY,                       XK_space,  setlayout,      {0} },
+-	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
++	{ MODKEY,                       XK_space,  nextlayout,     {0} },
++	{ MODKEY|ShiftMask,             XK_space,  prevlayout,     {0} },
+ 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
+ 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
+ 	{ MODKEY,                       XK_comma,  focusmon,       {.i = -1 } },
+Index: dwm/dwm.c
+===================================================================
+--- dwm.orig/dwm.c
++++ dwm/dwm.c
+@@ -133,6 +133,7 @@ typedef struct {
+ 
+ /* function declarations */
+ #include "push.h"
++#include "cyclelayouts.h"
+ static void applyrules(Client *c);
+ static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
+ static void arrange(Monitor *m);
+@@ -2191,3 +2192,4 @@ main(int argc, char *argv[]) {
+ 	return 0;
+ }
+ #include "push.c"
++#include "cyclelayouts.c"
