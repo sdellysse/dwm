@@ -17,12 +17,10 @@ static const Bool topbar            = True;     /* False means bottom bar */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 static const Rule rules[] = {
-	/* class        instance    title       tags mask     isfloating   monitor */
-  { "MPlayer",      NULL,       NULL,       0,            True,    -1 },
-  { "Gimp",         NULL,       NULL,       0,            True,    -1 },
-  { "Gvolwheel",    NULL,       NULL,       0,            True,    -1 },
-  { "trayer",       NULL,       NULL,      ~0,            True,    -1 },
-  { "stalonetray",  NULL,       NULL,      ~0,            True,    -1 }
+	/* class      instance    title       tags mask     isfloating   monitor */
+  { "MPlayer",    NULL,       NULL,       0,            True,    -1 },
+  { "Gimp",       NULL,       NULL,       0,            True,    -1 },
+  { "Gvolwheel",  NULL,       NULL,       0,            True,    -1 },
 };
 
 /* layout(s) */

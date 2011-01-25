@@ -1,0 +1,10 @@
+install-location
+config-h
+clean-removes-config-h
+modkey
+urxvtc
+clear-out-rules
+colors
+keys
+push-c
+trayer-patch

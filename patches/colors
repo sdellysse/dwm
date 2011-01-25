@@ -1,0 +1,23 @@
+Index: dwm/config.def.h
+===================================================================
+--- dwm.orig/config.def.h
++++ dwm/config.def.h
+@@ -1,12 +1,12 @@
+ /* See LICENSE file for copyright and license details. */
+ 
+ /* appearance */
+-static const char font[]            = "-*-terminus-medium-r-*-*-16-*-*-*-*-*-*-*";
+-static const char normbordercolor[] = "#cccccc";
+-static const char normbgcolor[]     = "#cccccc";
+-static const char normfgcolor[]     = "#000000";
+-static const char selbordercolor[]  = "#0066ff";
+-static const char selbgcolor[]      = "#0066ff";
++static const char font[]            = "-*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*";
++static const char normbordercolor[] = "#333333";
++static const char normbgcolor[]     = "#051121";
++static const char normfgcolor[]     = "#ffffff";
++static const char selbordercolor[]  = "#09384f";
++static const char selbgcolor[]      = "#09384f";
+ static const char selfgcolor[]      = "#ffffff";
+ static const unsigned int borderpx  = 1;        /* border pixel of windows */
+ static const unsigned int snap      = 32;       /* snap pixel */

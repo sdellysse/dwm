@@ -1,0 +1,12 @@
+Index: dwm/Makefile
+===================================================================
+--- dwm.orig/Makefile
++++ dwm/Makefile
+@@ -31,6 +31,7 @@ dwm: ${OBJ}
+ clean:
+ 	@echo cleaning
+ 	@rm -f dwm ${OBJ} dwm-${VERSION}.tar.gz
++	@rm config.h
+ 
+ dist: clean
+ 	@echo creating dist tarball

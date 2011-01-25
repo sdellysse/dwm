@@ -31,7 +31,6 @@ dwm: ${OBJ}
 clean:
 	@echo cleaning
 	@rm -f dwm ${OBJ} dwm-${VERSION}.tar.gz
-	@rm config.h
 
 dist: clean
 	@echo creating dist tarball
