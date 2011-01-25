@@ -1,0 +1,35 @@
+--- dwm.c	2011-01-10 15:12:04.433336369 -0500
++++ dwm.c	2011-01-10 15:04:59.603337417 -0500
+@@ -145,6 +150,7 @@
+ 	Monitor *next;
+ 	Window barwin;
+ 	const Layout *lt[2];
++	int primary;
+ };
+ 
+ typedef struct {
+@@ -644,16 +668,24 @@
+ 	m->lt[0] = &layouts[0];
+ 	m->lt[1] = &layouts[1 % LENGTH(layouts)];
+ 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
++
++	m->primary = primary;
++
+ 	return m;
+ }
+ 
+ void
+ destroynotify(XEvent *e) {
+ 	Client *c;
++	Systray *s;
+ 	XDestroyWindowEvent *ev = &e->xdestroywindow;
+ 
+ 	if((c = wintoclient(ev->window)))
+ 		unmanage(c, True);
++	else if((s = systray_find(ev->window))){
++		systray_del(s);
++		systray_update();
++	}
+ }
+ 
+ void

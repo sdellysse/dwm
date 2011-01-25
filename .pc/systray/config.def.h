@@ -1,6 +1,4 @@
 /* See LICENSE file for copyright and license details. */
-static const Bool systray_enable = True;
-static const int systray_spacing = 1;
 
 /* appearance */
 static const char font[]            = "-*-terminus-medium-r-*-*-14-*-*-*-*-*-*-*";

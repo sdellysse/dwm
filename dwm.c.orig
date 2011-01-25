@@ -54,16 +54,11 @@
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (textnw(X, strlen(X)) + dc.font.height)
 
-#define XEMBED_EMBEDDED_NOTIFY  0
-#define IFREE(x)                if(x) free(x)
-#define zcalloc(size)           calloc(1, (size))
-#define ROOT                    RootWindow(dpy, DefaultScreen(dpy))
-
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast };        /* cursor */
 enum { ColBorder, ColFG, ColBG, ColLast };              /* color */
 enum { NetSupported, NetWMName, NetWMState,
-       NetWMFullscreen, NetLast, NetSystemTray };                      /* EWMH atoms */
+       NetWMFullscreen, NetLast };                      /* EWMH atoms */
 enum { WMProtocols, WMDelete, WMState, WMLast };        /* default atoms */
 enum { ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast };             /* clicks */
@@ -136,13 +131,6 @@ typedef struct {
 	int monitor;
 } Rule;
 
-typedef struct Systray Systray;
-struct Systray {
-  Window win;
-  XRectangle geo;
-  Systray *next, *prev;
-};
-
 /* function declarations */
 #include "push.h"
 #include "cyclelayouts.h"
@@ -165,7 +153,7 @@ static void clientmessage(XEvent *e);
 static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
-static Monitor *createmon(int primary);
+static Monitor *createmon(void);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
@@ -240,13 +228,6 @@ static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
-static Bool systray_acquire(void);
-static void systray_add(Window win);
-static void systray_del(Systray *s);
-static void systray_freeicons(void);
-static Systray *systray_find(Window win);
-static int systray_get_width(void);
-static void systray_update(void);
 
 /* variables */
 static const char broken[] = "broken";
@@ -281,9 +262,6 @@ static DC dc;
 static Monitor *mons = NULL, *selmon = NULL;
 static Window root;
 
-Systray *trayicons;
-Window traywin;
-
 /* configuration, allows nested code to access above variables */
 #include "config.h"
 
@@ -305,7 +283,6 @@ struct Monitor {
 	Monitor *next;
 	Window barwin;
 	const Layout *lt[2];
-  int primary;
 	int curtag;
 	int prevtag;
 	const Layout *lts[LENGTH(tags) + 1];
@@ -645,7 +622,7 @@ configurerequest(XEvent *e) {
 }
 
 Monitor *
-createmon(int primary) {
+createmon(void) {
 	Monitor *m;
 	unsigned int i;
 
@@ -658,8 +635,6 @@ createmon(int primary) {
 	m->lt[0] = &layouts[0];
 	m->lt[1] = &layouts[1 % LENGTH(layouts)];
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
-
-  m->primary = primary;
 
 	/* pertag init */
 	m->curtag = m->prevtag = 1;
@@ -675,15 +650,10 @@ createmon(int primary) {
 void
 destroynotify(XEvent *e) {
 	Client *c;
-  Systray *s;
 	XDestroyWindowEvent *ev = &e->xdestroywindow;
 
 	if((c = wintoclient(ev->window)))
 		unmanage(c, True);
-	else if((s = systray_find(ev->window))){
-		systray_del(s);
-		systray_update();
-	}
 }
 
 void
@@ -764,7 +734,6 @@ drawbar(Monitor *m) {
 	if(m == selmon) { /* status is only drawn on selected monitor */
 		dc.w = TEXTW(stext);
 		dc.x = m->ww - dc.w;
-		if(m->primary == 1) dc.x -= systray_get_width(); // subtract systray width
 		if(dc.x < x) {
 			dc.x = x;
 			dc.w = m->ww - x;
@@ -1393,12 +1362,6 @@ clientmessage(XEvent *e) {
 			arrange(c->mon);
 		}
 	}
-	if(cme->window == traywin) {
-		if(cme->data.l[1] == XEMBED_EMBEDDED_NOTIFY){
-			systray_add(cme->data.l[2]);
-			systray_update();
-		}
-	}
 }
 
 void
@@ -1611,7 +1574,6 @@ setup(void) {
 	netatom[NetWMName] = XInternAtom(dpy, "_NET_WM_NAME", False);
 	netatom[NetWMState] = XInternAtom(dpy, "_NET_WM_STATE", False);
 	netatom[NetWMFullscreen] = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", False);
-	netatom[NetSystemTray] = XInternAtom(dpy, "_NET_SYSTEM_TRAY_S0", False);
 	/* init cursors */
 	cursor[CurNormal] = XCreateFontCursor(dpy, XC_left_ptr);
 	cursor[CurResize] = XCreateFontCursor(dpy, XC_sizing);
@@ -1630,7 +1592,6 @@ setup(void) {
 		XSetFont(dpy, dc.gc, dc.font.xfont->fid);
 	updatebars();
 	updatestatus();
-  systray_acquire();
 	/* EWMH support per view */
 	XChangeProperty(dpy, root, netatom[NetSupported], XA_ATOM, 32,
 			PropModeReplace, (unsigned char *) netatom, NetLast);
@@ -1953,13 +1914,12 @@ updategeom(void) {
 		XFree(info);
 		nn = j;
 		if(n <= nn) {
-			for(m = mons; m && m->next; m = m->next);
-			if(m) m->next = createmon(1);
-			else  mons = createmon(1);
-			for(i = 1; i < (nn - n); i++) { /* new monitors available */
+			for(i = 0; i < (nn - n); i++) { /* new monitors available */
 				for(m = mons; m && m->next; m = m->next);
-				if(m) m->next = createmon(0);
-				else mons = createmon(0);
+				if(m)
+					m->next = createmon();
+				else
+					mons = createmon();
 			}
 			for(i = 0, m = mons; i < nn && m; m = m->next, i++)
 				if(i >= n
@@ -1999,7 +1959,7 @@ updategeom(void) {
 	/* default monitor setup */
 	{
 		if(!mons)
-			mons = createmon(1);
+			mons = createmon();
 		if(mons->mw != sw || mons->mh != sh) {
 			dirty = True;
 			mons->mw = mons->ww = sw;
@@ -2213,155 +2173,6 @@ zoom(const Arg *arg) {
 	attach(c);
 	focus(c);
 	arrange(c->mon);
-}
-
-static Bool
-systray_acquire(void) {
-	XSetWindowAttributes wattr;
-
-	if(!systray_enable || traywin) return False;
-
-	if(XGetSelectionOwner(dpy, netatom[NetSystemTray]) != None) {
-		fprintf(stderr, "Can't initialize system tray: owned by another process\n");
-		return False;
-	}
-
-	// Init traywin window
-	wattr.event_mask        = ButtonPressMask | ExposureMask;
-	wattr.override_redirect = True;
-	wattr.background_pixmap = ParentRelative;
-	wattr.background_pixel  = dc.norm[ColBG];
-
-	traywin = XCreateSimpleWindow(dpy, root, 0, 0, 1, 1, 0, 0, dc.norm[ColBG]);
-
-	XChangeWindowAttributes(dpy, traywin, CWEventMask | CWOverrideRedirect | CWBackPixel, &wattr);
-	XSelectInput(dpy, traywin, KeyPressMask | ButtonPressMask);
-
-	XMapRaised(dpy, traywin);
-
-	XSetSelectionOwner(dpy, netatom[NetSystemTray], traywin, CurrentTime);
-
-	if(XGetSelectionOwner(dpy, netatom[NetSystemTray]) != traywin) {
-		systray_freeicons();
-		fprintf(stderr, "System tray: can't get systray manager\n");
-		return False;
-	}
-	XSync(dpy, False);
-
-	return True;
-}
-
-static void
-systray_add(Window win) {
-	Systray *s;
-
-	if(!systray_enable) return;
-
-	s = zcalloc(sizeof(Systray));
-	s->win = win;
-
-	s->geo.height = bh;
-	s->geo.width  = bh;
-
-	XSelectInput(dpy, s->win, StructureNotifyMask | PropertyChangeMask| EnterWindowMask | FocusChangeMask);
-	XReparentWindow(dpy, s->win, traywin, 0, 0);
-
-	// Attach
-	if(trayicons) trayicons->prev = s;
-
-	s->next = trayicons;
-	trayicons = s;
-
-	return;
-}
-
-static void
-systray_del(Systray *s) {
-	Systray **ss;
-
-	if(!systray_enable) return;
-
-	for(ss = &trayicons; *ss && *ss != s; ss = &(*ss)->next);
-	*ss = s->next;
-
-	IFREE(s);
-	return;
-}
-
-static void
-systray_freeicons(void) {
-	Systray *i;
-
-	if(!systray_enable) return;
-
-	for(i = trayicons; i; i = i->next) {
-		XUnmapWindow(dpy, i->win);
-		XReparentWindow(dpy, i->win, ROOT, 0, 0);
-		IFREE(i);
-	}
-
-	XSetSelectionOwner(dpy, netatom[NetSystemTray], None, CurrentTime);
-	XDestroyWindow(dpy, traywin);
-	XSync(dpy, 0);
-
-	return;
-}
-
-static Systray*
-systray_find(Window win) {
-	Systray *i;
-
-	if(!systray_enable) return NULL;
-
-	for(i = trayicons; i; i = i->next)
-		if(i->win == win) return i;
-
-	return NULL;
-}
-
-static int
-systray_get_width(void) {
-	int w = 0;
-	Systray *i;
-
-	if(!systray_enable) return 0;
-
-	for(i = trayicons; i; i = i->next)
-		w += i->geo.width + systray_spacing + 1;
-
-	return w;
-}
-
-static void
-systray_update(void) {
-	Systray *i;
-	Monitor *m;
-	int x = 1;
-	int pos = blw;
-
-	if(!systray_enable) return;
-
-	for(m = mons; m; m = m -> next){
-		if(m->primary == 1) pos = m -> ww;
-	}
-
-	if(!trayicons) {
-		pos -= 1;
-		XMoveResizeWindow(dpy, traywin, pos, 0, 1, 1);
-		return;
-	}
-
-	for(i = trayicons; i; i = i->next) {
-		XMapWindow(dpy, i->win);
-		XMoveResizeWindow(dpy, i->win, (i->geo.x = x), 0, i->geo.width, i->geo.height);
-
-		x += i->geo.width + systray_spacing;
-	}
-
-	pos -= x;
-	XMoveResizeWindow(dpy, traywin, pos, 0, x, bh);
-
-	return;
 }
 
 int
