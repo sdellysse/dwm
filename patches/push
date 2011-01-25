@@ -1,0 +1,48 @@
+Index: dwm/config.def.h
+===================================================================
+--- dwm.orig/config.def.h
++++ dwm/config.def.h
+@@ -61,6 +61,8 @@ static Key keys[] = {
+ 	{ MODKEY,                       XK_b,      togglebar,      {0} },
+ 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
+ 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
++	{ MODKEY|ShiftMask,             XK_j,      pushdown,       {0} },
++	{ MODKEY|ShiftMask,             XK_k,      pushup,         {0} },
+ 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
+ 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+ 	{ MODKEY,                       XK_Tab,    view,           {0} },
+Index: dwm/dwm.c
+===================================================================
+--- dwm.orig/dwm.c
++++ dwm/dwm.c
+@@ -132,6 +132,7 @@ typedef struct {
+ } Rule;
+ 
+ /* function declarations */
++#include "push-headers.c"
+ static void applyrules(Client *c);
+ static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
+ static void arrange(Monitor *m);
+@@ -1159,7 +1160,7 @@ manage(Window w, XWindowAttributes *wa)
+ 		           && (c->x + (c->w / 2) < c->mon->wx + c->mon->ww)) ? bh : c->mon->my);
+ 		c->bw = borderpx;
+ 	}
+-	
++
+ 	updatetitle(c);
+ 	if(strstr(c->name, "stalonetray") || strstr(c->name, "panel")) {
+ 		panel = c;
+@@ -1826,7 +1827,7 @@ void
+ unmanage(Client *c, Bool destroyed) {
+ 	Monitor *m = c->mon;
+ 	XWindowChanges wc;
+-	
++
+ 	if(panel == c) panel = NULL;
+ 
+ 	/* The server grab construct avoids race conditions. */
+@@ -2189,3 +2190,4 @@ main(int argc, char *argv[]) {
+ 	XCloseDisplay(dpy);
+ 	return 0;
+ }
++#include "push-impl.c"

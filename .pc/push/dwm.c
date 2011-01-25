@@ -132,7 +132,6 @@ typedef struct {
 } Rule;
 
 /* function declarations */
-#include "push-headers.c"
 static void applyrules(Client *c);
 static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
 static void arrange(Monitor *m);
@@ -1160,7 +1159,7 @@ manage(Window w, XWindowAttributes *wa) {
 		           && (c->x + (c->w / 2) < c->mon->wx + c->mon->ww)) ? bh : c->mon->my);
 		c->bw = borderpx;
 	}
-
+	
 	updatetitle(c);
 	if(strstr(c->name, "stalonetray") || strstr(c->name, "panel")) {
 		panel = c;
@@ -1827,7 +1826,7 @@ void
 unmanage(Client *c, Bool destroyed) {
 	Monitor *m = c->mon;
 	XWindowChanges wc;
-
+	
 	if(panel == c) panel = NULL;
 
 	/* The server grab construct avoids race conditions. */
@@ -2190,4 +2189,3 @@ main(int argc, char *argv[]) {
 	XCloseDisplay(dpy);
 	return 0;
 }
-#include "push-impl.c"
