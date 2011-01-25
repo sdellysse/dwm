@@ -1,11 +1,10 @@
 install-location
 config-h
 clean-removes-config-h
+pertag
 modkey
 urxvtc
 clear-out-rules
 colors
 keys
-push-c
 trayer-patch
-gapless-grid
