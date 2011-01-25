@@ -132,7 +132,7 @@ typedef struct {
 } Rule;
 
 /* function declarations */
-#include "push-headers.c"
+#include "push.h"
 static void applyrules(Client *c);
 static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
 static void arrange(Monitor *m);
@@ -2190,4 +2190,4 @@ main(int argc, char *argv[]) {
 	XCloseDisplay(dpy);
 	return 0;
 }
-#include "push-impl.c"
+#include "push.c"

@@ -19,7 +19,7 @@ Index: dwm/dwm.c
  } Rule;
  
  /* function declarations */
-+#include "push-headers.c"
++#include "push.h"
  static void applyrules(Client *c);
  static Bool applysizehints(Client *c, int *x, int *y, int *w, int *h, Bool interact);
  static void arrange(Monitor *m);
@@ -45,4 +45,4 @@ Index: dwm/dwm.c
  	XCloseDisplay(dpy);
  	return 0;
  }
-+#include "push-impl.c"
++#include "push.c"
