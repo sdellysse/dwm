@@ -36,7 +36,7 @@ static const Layout layouts[] = {
 	{ "[M]",      monocle },
  	{ "TTT",      bstack },
  	{ "===",      bstackhoriz },
-  { "###",      gaplessgrid },
+  { "[+]",      gaplessgrid },
   { .symbol = NULL,   .arrange = NULL    },
 };
 

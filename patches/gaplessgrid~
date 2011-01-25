@@ -6,7 +6,7 @@ Index: dwm/config.def.h
  	{ "[M]",      monocle },
   	{ "TTT",      bstack },
   	{ "===",      bstackhoriz },
-+  { "[+]",      gaplessgrid },
++  { "###",      gaplessgrid },
    { .symbol = NULL,   .arrange = NULL    },
  };
  
